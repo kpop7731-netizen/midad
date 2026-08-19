@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>احجز نسختك من مداد | الشاب المسلم</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #0D0B08;
+    font-family: 'Amiri', serif;
+    color: #EDE6D6;
+    display: flex;
+    justify-content: center;
+    padding: 32px 16px;
+    min-height: 100vh;
+  }
+  .card {
+    width: 100%;
+    max-width: 420px;
+    background: linear-gradient(160deg, #16130F, #1E1812);
+    border: 0.5px solid #3A311F;
+    border-radius: 14px;
+    padding: 32px 26px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  }
+  h1 {
+    text-align: center;
+    font-size: 34px;
+    font-weight: 700;
+    color: #C9A24B;
+    margin: 0 0 4px;
+  }
+  .tagline {
+    text-align: center;
+    font-size: 13px;
+    color: #A69B7E;
+    letter-spacing: 2px;
+    margin: 0 0 22px;
+  }
+  .counter {
+    text-align: center;
+    background: rgba(201,162,75,0.08);
+    border: 0.5px solid rgba(201,162,75,0.3);
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 22px;
+    font-size: 14px;
+    color: #EDE6D6;
+  }
+  .counter b { color: #C9A24B; font-size: 16px; }
+  label {
+    display: block;
+    font-size: 13px;
+    color: #B9AF98;
+    margin: 14px 0 6px;
+  }
+  input, select, textarea {
+    width: 100%;
+    background: #0D0B08;
+    border: 0.5px solid #3A311F;
+    border-radius: 8px;
+    color: #EDE6D6;
+    font-family: 'Amiri', serif;
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: #C9A24B;
+  }
+  .custom-qty-container {
+    display: none;
+    margin-top: 8px;
+  }
+  .price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 20px 0 6px;
+    font-size: 13px;
+    color: #B9AF98;
+  }
+  .price-row b { color: #C9A24B; font-size: 20px; }
+  .err {
+    color: #E27878;
+    font-size: 12px;
+    margin-top: 4px;
+    display: none;
+  }
+  button {
+    width: 100%;
+    margin-top: 22px;
+    background: #C9A24B;
+    color: #0D0B08;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Amiri', serif;
+    font-weight: 700;
+    font-size: 16px;
+    padding: 13px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  button:hover {
+    background: #d8b056;
+  }
+  button:active { opacity: 0.85; }
+  .confirm {
+    display: none;
+    text-align: center;
+    margin-top: 18px;
+    font-size: 14px;
+    color: #C9A24B;
+    line-height: 1.8;
+  }
+  .note {
+    text-align: center;
+    font-size: 11px;
+    color: #6B6355;
+    margin-top: 16px;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>مداد</h1>
+  <p class="tagline">الشاب المسلم</p>
+
+  <div class="counter">
+    متبقي <b id="remaining">…</b> من ٥٠ نسخة من الدفعة الأولى
+  </div>
+
+  <form id="bookingForm">
+    <label for="name">الاسم بالكامل</label>
+    <input type="text" id="name" placeholder="اكتب اسمك هنا">
+    <div class="err" id="nameErr">من فضلك اكتب اسمك</div>
+
+    <label for="phone">رقم الواتساب للتواصل والتأكيد</label>
+    <input type="tel" id="phone" placeholder="01xxxxxxxxx">
+    <div class="err" id="phoneErr">من فضلك اكتب رقم هاتف صحيح</div>
+
+    <label for="qty">عدد النسخ المطلوبة</label>
+    <select id="qty">
+      <option value="1">نسخة واحدة</option>
+      <option value="2">نسختان</option>
+      <option value="3">٣ نسخ</option>
+      <option value="more">أكثر من ذلك (اكتب العدد)</option>
+    </select>
+
+    <div class="custom-qty-container" id="customQtyBox">
+      <label for="customQty">حدد عدد النسخ المطلوبة:</label>
+      <input type="number" id="customQty" min="4" value="4" placeholder="أدخل العدد">
+    </div>
+
+    <label for="notes">العنوان أو الملاحظات (اختياري)</label>
+    <textarea id="notes" rows="2" placeholder="المحافظة / العنوان / وقت مناسب للتواصل..."></textarea>
+
+    <div class="price-row">
+      <span>السعر الإجمالي:</span>
+      <b id="totalPrice">١٠٠ ج.م</b>
+    </div>
+
+    <button type="submit">احجز نسختك الآن عبر الواتساب</button>
+  </form>
+
+  <div class="confirm" id="confirmMsg">
+    تم فتح تطبيق الواتساب لإرسال الطلب ✅<br>
+    إذا لم يفتح تلقائياً، يمكنك التواصل مباشرة على الرقم: <br>
+    <b style="color:#EDE6D6;">01556518897</b>
+  </div>
+
+  <p class="note">بياناتك تُرسل مباشرة عبر حسابك على واتساب بخصوصية تامة.</p>
+</div>
+
+<script>
+const OWNER_WHATSAPP = "201556518897";
+const UNIT_PRICE = 100;
+const TOTAL_COPIES = 50;
+
+function getStoredCount() {
+  const count = localStorage.getItem('midad-bookings-count');
+  return count ? parseInt(count, 10) : 0;
+}
+
+function updateRemaining() {
+  const count = getStoredCount();
+  const remaining = Math.max(TOTAL_COPIES - count, 0);
+  document.getElementById('remaining').textContent = remaining;
+}
+
+function getSelectedQty() {
+  const qtySelect = document.getElementById('qty').value;
+  if (qtySelect === 'more') {
+    const customVal = parseInt(document.getElementById('customQty').value, 10);
+    return isNaN(customVal) || customVal < 1 ? 1 : customVal;
+  }
+  return parseInt(qtySelect, 10);
+}
+
+function updateTotalPrice() {
+  const qty = getSelectedQty();
+  const total = qty * UNIT_PRICE;
+  document.getElementById('totalPrice').textContent = total + " ج.م";
+}
+
+document.getElementById('qty').addEventListener('change', function() {
+  const customBox = document.getElementById('customQtyBox');
+  if (this.value === 'more') {
+    customBox.style.display = 'block';
+  } else {
+    customBox.style.display = 'none';
+  }
+  updateTotalPrice();
+});
+
+document.getElementById('customQty').addEventListener('input', updateTotalPrice);
+
+updateRemaining();
+updateTotalPrice();
+
+document.getElementById('bookingForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  const name = document.getElementById('name').value.trim();
+  const phone = document.getElementById('phone').value.trim();
+  const qty = getSelectedQty();
+  const notes = document.getElementById('notes').value.trim();
+
+  const nameErr = document.getElementById('nameErr');
+  const phoneErr = document.getElementById('phoneErr');
+  nameErr.style.display = 'none';
+  phoneErr.style.display = 'none';
+
+  let valid = true;
+  if (!name) { nameErr.style.display = 'block'; valid = false; }
+  if (!phone || phone.length < 8) { phoneErr.style.display = 'block'; valid = false; }
+  if (!valid) return;
+
+  const currentCount = getStoredCount();
+  localStorage.setItem('midad-bookings-count', String(currentCount + qty));
+  updateRemaining();
+
+  const total = qty * UNIT_PRICE;
+  let message = "السلام عليكم، أرغب في حجز نسخة من مشروع (مداد | الشاب المسلم)\n\n";
+  message += "👤 الاسم: " + name + "\n";
+  message += "📞 رقم التواصل: " + phone + "\n";
+  message += "📚 عدد النسخ: " + qty + "\n";
+  message += "💰 الإجمالي: " + total + " جنيه مصري\n";
+  if (notes) message += "📝 ملاحظات/العنوان: " + notes + "\n";
+
+  const waLink = "https://wa.me/" + OWNER_WHATSAPP + "?text=" + encodeURIComponent(message);
+  window.open(waLink, '_blank');
+
+  document.getElementById('confirmMsg').style.display = 'block';
+  document.getElementById('bookingForm').reset();
+  document.getElementById('customQtyBox').style.display = 'none';
+  updateTotalPrice();
+});
+</script>
+</body>
+</html>
