@@ -75,15 +75,23 @@
     display: none;
     margin-top: 8px;
   }
+  .price-container {
+    margin: 20px 0 6px;
+  }
   .price-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin: 20px 0 6px;
     font-size: 13px;
     color: #B9AF98;
   }
   .price-row b { color: #C9A24B; font-size: 20px; }
+  .shipping-note {
+    font-size: 11px;
+    color: #A69B7E;
+    text-align: left;
+    margin-top: 2px;
+  }
   .err {
     color: #E27878;
     font-size: 12px;
@@ -104,9 +112,7 @@
     cursor: pointer;
     transition: background 0.2s;
   }
-  button:hover {
-    background: #d8b056;
-  }
+  button:hover { background: #d8b056; }
   button:active { opacity: 0.85; }
   .confirm {
     display: none;
@@ -158,9 +164,12 @@
     <label for="notes">العنوان أو الملاحظات (اختياري)</label>
     <textarea id="notes" rows="2" placeholder="المحافظة / العنوان / وقت مناسب للتواصل..."></textarea>
 
-    <div class="price-row">
-      <span>السعر الإجمالي:</span>
-      <b id="totalPrice">١٠٠ ج.م</b>
+    <div class="price-container">
+      <div class="price-row">
+        <span>السعر الإجمالي:</span>
+        <b id="totalPrice">١٠٠ ج.م</b>
+      </div>
+      <div class="shipping-note">* السعر لا يشمل مصاريف الشحن</div>
     </div>
 
     <button type="submit">احجز نسختك الآن عبر الواتساب</button>
@@ -168,15 +177,26 @@
 
   <div class="confirm" id="confirmMsg">
     تم فتح تطبيق الواتساب لإرسال الطلب ✅<br>
-    إذا لم يفتح تلقائياً، يمكنك التواصل مباشرة على الرقم: <br>
-    <b style="color:#EDE6D6;">01556518897</b>
+    إذا لم يفتح تلقائياً، يمكنك التواصل مباشرة على:<br>
+    <b style="color:#EDE6D6; dir:ltr; display:inline-block;">+201556518997</b>
   </div>
 
   <p class="note">بياناتك تُرسل مباشرة عبر حسابك على واتساب بخصوصية تامة.</p>
 </div>
 
 <script>
-const OWNER_WHATSAPP = "201556518897";
+// ==========================================
+// الإعدادات المربوطة بنموذجك المباشر
+const OWNER_WHATSAPP = "+201556518997"; 
+
+const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdNahrkkdRIs0PqiaiL1uAfmML8s3uqE35MVlGakPGU1dHutA/formResponse";
+
+const ENTRY_NAME = "entry.1250543120";
+const ENTRY_PHONE = "entry.2075273833";
+const ENTRY_QTY = "entry.1807369720";
+const ENTRY_NOTES = "entry.418540168";
+// ==========================================
+
 const UNIT_PRICE = 100;
 const TOTAL_COPIES = 50;
 
@@ -239,16 +259,32 @@ document.getElementById('bookingForm').addEventListener('submit', function(e) {
   if (!phone || phone.length < 8) { phoneErr.style.display = 'block'; valid = false; }
   if (!valid) return;
 
+  // إرسال البيانات أوتوماتيكياً إلى Google Sheets
+  const formBody = new URLSearchParams();
+  formBody.append(ENTRY_NAME, name);
+  formBody.append(ENTRY_PHONE, phone);
+  formBody.append(ENTRY_QTY, qty);
+  formBody.append(ENTRY_NOTES, notes);
+
+  fetch(GOOGLE_FORM_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: formBody
+  }).catch(err => console.log(err));
+
+  // تحديث العداد
   const currentCount = getStoredCount();
   localStorage.setItem('midad-bookings-count', String(currentCount + qty));
   updateRemaining();
 
+  // إرسال رسالة الواتساب
   const total = qty * UNIT_PRICE;
   let message = "السلام عليكم، أرغب في حجز نسخة من مشروع (مداد | الشاب المسلم)\n\n";
   message += "👤 الاسم: " + name + "\n";
   message += "📞 رقم التواصل: " + phone + "\n";
   message += "📚 عدد النسخ: " + qty + "\n";
-  message += "💰 الإجمالي: " + total + " جنيه مصري\n";
+  message += "💰 الإجمالي: " + total + " جنيه مصري (غير شامل الشحن)\n";
   if (notes) message += "📝 ملاحظات/العنوان: " + notes + "\n";
 
   const waLink = "https://wa.me/" + OWNER_WHATSAPP + "?text=" + encodeURIComponent(message);
