@@ -77,6 +77,20 @@
   }
   .price-container {
     margin: 20px 0 6px;
+    background: rgba(201,162,75,0.04);
+    border: 0.5px dashed rgba(201,162,75,0.25);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .launch-badge {
+    display: inline-block;
+    background: #C9A24B;
+    color: #0D0B08;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 8px;
   }
   .price-row {
     display: flex;
@@ -89,8 +103,14 @@
   .shipping-note {
     font-size: 11px;
     color: #A69B7E;
-    text-align: left;
-    margin-top: 2px;
+    text-align: right;
+    margin-top: 6px;
+    line-height: 1.5;
+  }
+  .price-increase-warning {
+    color: #E27878;
+    font-size: 11px;
+    margin-top: 4px;
   }
   .err {
     color: #E27878;
@@ -136,7 +156,7 @@
   <p class="tagline">الشاب المسلم</p>
 
   <div class="counter">
-    متبقي <b id="remaining">…</b> من ٥٠ نسخة من الدفعة الأولى
+    متبقي <b id="remaining">…</b> من ٥٠ نسخة من دفعة الإطلاق
   </div>
 
   <form id="bookingForm">
@@ -165,14 +185,16 @@
     <textarea id="notes" rows="2" placeholder="المحافظة / العنوان / وقت مناسب للتواصل..."></textarea>
 
     <div class="price-container">
+      <span class="launch-badge">عرض الإطلاق الحصري 🔥</span>
       <div class="price-row">
         <span>السعر الإجمالي:</span>
         <b id="totalPrice">١٠٠ ج.م</b>
       </div>
       <div class="shipping-note">* السعر لا يشمل مصاريف الشحن</div>
+      <div class="price-increase-warning">⚠️ هذا السعر خاص بـ ٥٠ نسخة الأولى فقط، وسيرتفع السعر بعد انتهاء دفعة الإطلاق.</div>
     </div>
 
-    <button type="submit">احجز نسختك الآن عبر الواتساب</button>
+    <button type="submit">احجز نسختك بسعر الإطلاق الآن</button>
   </form>
 
   <div class="confirm" id="confirmMsg">
@@ -280,7 +302,7 @@ document.getElementById('bookingForm').addEventListener('submit', function(e) {
 
   // إرسال رسالة الواتساب
   const total = qty * UNIT_PRICE;
-  let message = "السلام عليكم، أرغب في حجز نسخة من مشروع (مداد | الشاب المسلم)\n\n";
+  let message = "السلام عليكم، أرغب في حجز نسخة بسعر الإطلاق من مشروع (مداد | الشاب المسلم)\n\n";
   message += "👤 الاسم: " + name + "\n";
   message += "📞 رقم التواصل: " + phone + "\n";
   message += "📚 عدد النسخ: " + qty + "\n";
