@@ -200,7 +200,7 @@
   <div class="confirm" id="confirmMsg">
     تم فتح تطبيق الواتساب لإرسال الطلب ✅<br>
     إذا لم يفتح تلقائياً، يمكنك التواصل مباشرة على:<br>
-    <b style="color:#EDE6D6; dir:ltr; display:inline-block;">+201556518997</b>
+    <b style="color:#EDE6D6; dir:ltr; display:inline-block;">+201556518897</b>
   </div>
 
   <p class="note">بياناتك تُرسل مباشرة عبر حسابك على واتساب بخصوصية تامة.</p>
@@ -208,10 +208,11 @@
 
 <script>
 // ==========================================
-// الإعدادات المربوطة بنموذجك المباشر
-const OWNER_WHATSAPP = "+201556518997"; 
-
+const OWNER_WHATSAPP = "201556518897"; 
 const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdNahrkkdRIs0PqiaiL1uAfmML8s3uqE35MVlGakPGU1dHutA/formResponse";
+
+// رابط Apps Script الخاص بك للربط الحي مع شيت جوجل
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwkRFr5-SoBiw9vbu9ZIQzpJwZbAL_e5FLeQSN_JG6VjicmtdWfw3EC4kh4P74MtM3PNA/exec";
 
 const ENTRY_NAME = "entry.1250543120";
 const ENTRY_PHONE = "entry.2075273833";
@@ -222,15 +223,17 @@ const ENTRY_NOTES = "entry.418540168";
 const UNIT_PRICE = 100;
 const TOTAL_COPIES = 50;
 
-function getStoredCount() {
-  const count = localStorage.getItem('midad-bookings-count');
-  return count ? parseInt(count, 10) : 0;
-}
-
-function updateRemaining() {
-  const count = getStoredCount();
-  const remaining = Math.max(TOTAL_COPIES - count, 0);
-  document.getElementById('remaining').textContent = remaining;
+// جلب العدد المباع الحقيقي المحدث فوراً من جوجل شيت
+async function fetchRemainingFromSheet() {
+  try {
+    const res = await fetch(APPS_SCRIPT_URL);
+    const data = await res.json();
+    const sold = data.totalSold || 0;
+    const remaining = Math.max(TOTAL_COPIES - sold, 0);
+    document.getElementById('remaining').textContent = remaining;
+  } catch (err) {
+    console.error("خطأ في جلب العداد:", err);
+  }
 }
 
 function getSelectedQty() {
@@ -260,7 +263,8 @@ document.getElementById('qty').addEventListener('change', function() {
 
 document.getElementById('customQty').addEventListener('input', updateTotalPrice);
 
-updateRemaining();
+// تشغيل جلب المتبقي فور فتح الصفحة
+fetchRemainingFromSheet();
 updateTotalPrice();
 
 document.getElementById('bookingForm').addEventListener('submit', function(e) {
@@ -293,12 +297,10 @@ document.getElementById('bookingForm').addEventListener('submit', function(e) {
     mode: 'no-cors',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: formBody
+  }).then(() => {
+    // تحديث العداد مجدداً بعد إرسال الطلب بـ 3 ثوانٍ
+    setTimeout(fetchRemainingFromSheet, 3000);
   }).catch(err => console.log(err));
-
-  // تحديث العداد
-  const currentCount = getStoredCount();
-  localStorage.setItem('midad-bookings-count', String(currentCount + qty));
-  updateRemaining();
 
   // إرسال رسالة الواتساب
   const total = qty * UNIT_PRICE;
