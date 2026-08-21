@@ -234,18 +234,24 @@ async function fetchRemainingFromSheet() {
     const sold = data.totalSold || 0;
     const remaining = Math.max(TOTAL_COPIES - sold, 0);
 
-    if (remaining <= 0) {
+    if (sold >= TOTAL_COPIES) {
+      // انتهت دفعة الإطلاق
       isLaunchEnded = true;
       currentUnitPrice = REGULAR_PRICE;
       
-      document.getElementById('counterBox').innerHTML = "<b>دفعة الإطلاق انتهت - الحجز متاح بالسعر الرسمي</b>";
+      document.getElementById('counterBox').innerHTML = "تم بيع <b>" + sold + "</b> نسخة حتى الآن";
       document.getElementById('launchBadge').textContent = "السعر الرسمي";
       document.getElementById('priceWarning').style.display = 'none';
       document.getElementById('submitBtn').textContent = "احجز نسختك الآن";
     } else {
+      // لا تزال دفعة الإطلاق مستمرة
       isLaunchEnded = false;
       currentUnitPrice = LAUNCH_PRICE;
-      document.getElementById('remaining').textContent = remaining;
+      
+      document.getElementById('counterBox').innerHTML = 'متبقي <b id="remaining">' + remaining + '</b> من ٥٠ نسخة من دفعة الإطلاق';
+      document.getElementById('launchBadge').textContent = "عرض الإطلاق الحصري 🔥";
+      document.getElementById('priceWarning').style.display = 'block';
+      document.getElementById('submitBtn').textContent = "احجز نسختك بسعر الإطلاق الآن";
     }
     
     updateTotalPrice();
