@@ -155,7 +155,7 @@
   <h1>مداد</h1>
   <p class="tagline">الشاب المسلم</p>
 
-  <div class="counter">
+  <div class="counter" id="counterBox">
     متبقي <b id="remaining">…</b> من ٥٠ نسخة من دفعة الإطلاق
   </div>
 
@@ -185,16 +185,16 @@
     <textarea id="notes" rows="2" placeholder="المحافظة / العنوان / وقت مناسب للتواصل..."></textarea>
 
     <div class="price-container">
-      <span class="launch-badge">عرض الإطلاق الحصري 🔥</span>
+      <span class="launch-badge" id="launchBadge">عرض الإطلاق الحصري 🔥</span>
       <div class="price-row">
         <span>السعر الإجمالي:</span>
         <b id="totalPrice">١٠٠ ج.م</b>
       </div>
       <div class="shipping-note">* السعر لا يشمل مصاريف الشحن</div>
-      <div class="price-increase-warning">⚠️ هذا السعر خاص بـ ٥٠ نسخة الأولى فقط، وسيرتفع السعر بعد انتهاء دفعة الإطلاق.</div>
+      <div class="price-increase-warning" id="priceWarning">⚠️ هذا السعر خاص بـ ٥٠ نسخة الأولى فقط، وسيرتفع السعر بعد انتهاء دفعة الإطلاق.</div>
     </div>
 
-    <button type="submit">احجز نسختك بسعر الإطلاق الآن</button>
+    <button type="submit" id="submitBtn">احجز نسختك بسعر الإطلاق الآن</button>
   </form>
 
   <div class="confirm" id="confirmMsg">
@@ -211,7 +211,6 @@
 const OWNER_WHATSAPP = "+201556518997"; 
 const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdNahrkkdRIs0PqiaiL1uAfmML8s3uqE35MVlGakPGU1dHutA/formResponse";
 
-// رابط Apps Script الجديد المربوط بالعمود D مباشرة
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzaoJcSkUTzUPztp7nPEHWHzj970Zypwi7bwy5TshmTKAlRBBcreuRdR7B0GLvA8ZUthQ/exec";
 
 const ENTRY_NAME = "entry.1250543120";
@@ -220,17 +219,36 @@ const ENTRY_QTY = "entry.1807369720";
 const ENTRY_NOTES = "entry.418540168";
 // ==========================================
 
-const UNIT_PRICE = 100;
+const LAUNCH_PRICE = 100;
+const REGULAR_PRICE = 150;
 const TOTAL_COPIES = 50;
 
-// جلب العدد المباع الحقيقي المحدث فوراً من جوجل شيت
+let currentUnitPrice = LAUNCH_PRICE;
+let isLaunchEnded = false;
+
+// جلب العدد المباع وتطبيق التحول الآلي
 async function fetchRemainingFromSheet() {
   try {
     const res = await fetch(APPS_SCRIPT_URL);
     const data = await res.json();
     const sold = data.totalSold || 0;
     const remaining = Math.max(TOTAL_COPIES - sold, 0);
-    document.getElementById('remaining').textContent = remaining;
+
+    if (remaining <= 0) {
+      isLaunchEnded = true;
+      currentUnitPrice = REGULAR_PRICE;
+      
+      document.getElementById('counterBox').innerHTML = "<b>دفعة الإطلاق انتهت - الحجز متاح بالسعر الرسمي</b>";
+      document.getElementById('launchBadge').textContent = "السعر الرسمي";
+      document.getElementById('priceWarning').style.display = 'none';
+      document.getElementById('submitBtn').textContent = "احجز نسختك الآن";
+    } else {
+      isLaunchEnded = false;
+      currentUnitPrice = LAUNCH_PRICE;
+      document.getElementById('remaining').textContent = remaining;
+    }
+    
+    updateTotalPrice();
   } catch (err) {
     console.error("خطأ في جلب العداد:", err);
   }
@@ -247,7 +265,7 @@ function getSelectedQty() {
 
 function updateTotalPrice() {
   const qty = getSelectedQty();
-  const total = qty * UNIT_PRICE;
+  const total = qty * currentUnitPrice;
   document.getElementById('totalPrice').textContent = total + " ج.م";
 }
 
@@ -263,9 +281,7 @@ document.getElementById('qty').addEventListener('change', function() {
 
 document.getElementById('customQty').addEventListener('input', updateTotalPrice);
 
-// تشغيل جلب المتبقي فور فتح الصفحة
 fetchRemainingFromSheet();
-updateTotalPrice();
 
 document.getElementById('bookingForm').addEventListener('submit', function(e) {
   e.preventDefault();
@@ -285,7 +301,6 @@ document.getElementById('bookingForm').addEventListener('submit', function(e) {
   if (!phone || phone.length < 8) { phoneErr.style.display = 'block'; valid = false; }
   if (!valid) return;
 
-  // إرسال البيانات أوتوماتيكياً إلى Google Sheets
   const formBody = new URLSearchParams();
   formBody.append(ENTRY_NAME, name);
   formBody.append(ENTRY_PHONE, phone);
@@ -298,13 +313,14 @@ document.getElementById('bookingForm').addEventListener('submit', function(e) {
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: formBody
   }).then(() => {
-    // تحديث العداد مجدداً بعد إرسال الطلب بـ 3 ثوانٍ
     setTimeout(fetchRemainingFromSheet, 3000);
   }).catch(err => console.log(err));
 
-  // إرسال رسالة الواتساب
-  const total = qty * UNIT_PRICE;
-  let message = "السلام عليكم، أرغب في حجز نسخة بسعر الإطلاق من مشروع (مداد | الشاب المسلم)\n\n";
+  const total = qty * currentUnitPrice;
+  let message = isLaunchEnded 
+    ? "السلام عليكم، أرغب في حجز نسخة من مشروع (مداد | الشاب المسلم)\n\n"
+    : "السلام عليكم، أرغب في حجز نسخة بسعر الإطلاق من مشروع (مداد | الشاب المسلم)\n\n";
+
   message += "👤 الاسم: " + name + "\n";
   message += "📞 رقم التواصل: " + phone + "\n";
   message += "📚 عدد النسخ: " + qty + "\n";
